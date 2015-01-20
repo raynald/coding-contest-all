@@ -1,2 +1,2 @@
-fb-hacker-cup
+Coding Contest
 =============
