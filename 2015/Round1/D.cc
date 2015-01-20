@@ -20,7 +20,7 @@ struct _edge {
 };
 
 int dp[MAXN];
-_edge Edge[MAXN];
+_edge Edge[2*MAXN];
 int start[MAXN];
 int f[MAXN][4];
 
@@ -29,35 +29,42 @@ int minh(int x, int y) {
 }
 
 stack<int> st;
-bool v[MAXN];
+int v[MAXN];
 
 void dfs() {
     int ans;
+    bool flag;
     int point;
     int x;
 
-    memset(v, 0, sizeof(v));
+    memset(v, -1, sizeof(v));
     st.push(1);
+    v[1] = 1;
     while(st.size()>0) {
         x = st.top();
-        if (v[x] || start[x]==-1) {
+        flag = 1;
+        for(int i = start[x];i != -1;i = Edge[i].next) {
+            if(v[Edge[i].to]==-1) {
+                v[Edge[i].to] = v[x] + 1;
+                st.push(Edge[i].to);
+                flag = 0;
+            }
+        }
+        if(flag) {
             st.pop();
             for(int i = 1;i <= 3; ++i) {
                 ans = i;
                 for(int j=start[x];j!=-1;j = Edge[j].next) {
                     point = Edge[j].to;
-                    if(i==1) ans += minh(f[point][2], f[point][3]);
-                    if(i==2) ans += minh(f[point][1], f[point][3]);
-                    if(i==3) ans += minh(f[point][2], f[point][1]);
+                    if(v[point] == v[x]+1) {
+                        if(i==1) ans += minh(f[point][2], f[point][3]);
+                        if(i==2) ans += minh(f[point][1], f[point][3]);
+                        if(i==3) ans += minh(f[point][2], f[point][1]);
+                    }
                 }
                 f[x][i] = ans;
             }
-        } else {
-            for(int i = start[x];i != -1;i = Edge[i].next) {
-                st.push(Edge[i].to);
-            }
-            v[x] = 1;
-       }
+        }
     }
 }
 
@@ -80,6 +87,10 @@ int main() {
             Edge[edge_count].to = i;
             Edge[edge_count].next = start[node];
             start[node] = edge_count;
+            edge_count ++;
+            Edge[edge_count].to = node;
+            Edge[edge_count].next = start[i];
+            start[i] = edge_count;
         }
         dfs();
         cout << "Case #" << testcase << ": " << minh(f[1][1], minh(f[1][2], f[1][3])) << endl;
